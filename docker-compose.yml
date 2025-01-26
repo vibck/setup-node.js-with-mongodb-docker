@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # definiert den mongoDB service
+  mongo:
+    image: mongo:latest # verwendet das neueste mongoDB image
+    container_name: mongo-container # gibt dem container einen namen
+    ports:
+      - "27017:27017" # verbindet den port 27017 des containers mit dem host
+    environment: # setzt umgebungsvariablen für die datenbank
+      MONGO_INITDB_ROOT_USERNAME: root # der benutzername für mongoDB
+      MONGO_INITDB_ROOT_PASSWORD: deinPasswort # das passwort für mongoDB
+      MONGO_INITDB_DATABASE: todos_db # erstellt eine standarddatenbank
+    networks:
+      - app-network # fügt den container einem benutzerdefinierten netzwerk hinzu
+
+  # definiert den backend service
+  backend:
+    build:
+      context: . # verweist auf das aktuelle verzeichnis mit dem Dockerfile
+    container_name: node-backend # gibt dem container einen namen
+    ports:
+      - "5000:5000" # verbindet den port 5000 des containers mit dem host
+    env_file:
+      - .env # lädt die umgebungsvariablen aus der .env datei
+    networks:
+      - app-network # fügt den container demselben netzwerk hinzu wie mongoDB
+    depends_on:
+      - mongo # stellt sicher, dass mongo gestartet ist, bevor backend läuft
+
+networks:
+  app-network:
+    driver: bridge # erstellt ein bridge-netzwerk für die kommunikation zwischen den containern
